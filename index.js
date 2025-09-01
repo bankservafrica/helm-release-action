@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const path = require('path');
 const fs = require('fs');
-const { getLatestHelmS3Version } = require('./utils'); // Utility function for fetching latest release
+const { getLatestHelmS3Version } = require('./utils');
 
 const HELM = 'helm';
 const REPO_ALIAS = 'repo';
@@ -16,9 +16,10 @@ function repo() {
 }
 
 // Returns argument required to generate the chart package.
+// This function has been corrected to use 'helm package'
 function package() {
   const args = [
-    'pack',
+    'package', // <-- CHANGED from 'pack' to 'package' to support --version flag
     core.getInput('chart'),
     '--dependency-update',
     '--destination',
@@ -55,6 +56,7 @@ function push() {
 }
 
 // Returns argument required to install helm-s3 and helm-pack plugins.
+// This function has been corrected to remove the helm-pack plugin installation.
 async function installPlugins() {
   try {
     let helmS3Version = core.getInput('helmS3Version'); // Optional input
@@ -65,8 +67,8 @@ async function installPlugins() {
     // Install helm-s3 with --version flag
     await exec.exec(HELM, ['plugin', 'install', 'https://github.com/hypnoglow/helm-s3.git', '--version', helmS3Version]);
 
-    // Install helm-pack
-    await exec.exec(HELM, ['plugin', 'install', 'https://github.com/thynquest/helm-pack.git']);
+    // The helm-pack plugin is no longer needed, so this line has been removed.
+    // await exec.exec(HELM, ['plugin', 'install', 'https://github.com/thynquest/helm-pack.git']);
   } catch (err) {
     core.error(`Failed to install plugins: ${err.message}`);
     throw err;
