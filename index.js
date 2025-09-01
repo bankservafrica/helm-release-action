@@ -36,8 +36,14 @@ function package() {
 }
 
 // Returns argument required to push the chart release to S3 repository.
+// This function has been corrected to use an absolute file path.
 function push() {
-  const releaseFile = path.join(RELEASE_DIR, fs.readdirSync(RELEASE_DIR)[0]);
+  // Get the name of the packaged chart file
+  const chartFileName = fs.readdirSync(RELEASE_DIR)[0];
+
+  // Use path.resolve() to create a full, absolute path to the file
+  const releaseFile = path.resolve(RELEASE_DIR, chartFileName);
+
   const args = ['s3', 'push', releaseFile, REPO_ALIAS];
 
   const forceRelease = core.getInput('forceRelease', { required: true }) === 'true';
