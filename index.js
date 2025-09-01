@@ -89,6 +89,13 @@ async function installPlugins() {
 async function main() {
   try {
     // Create the .release directory before packaging
+    console.log('--- The updated script is running ---'); // ADD THIS LINE
+
+    // Create the .release directory before packaging
+    if (!fs.existsSync(RELEASE_DIR)) {
+        fs.mkdirSync(RELEASE_DIR, { recursive: true });
+    }
+
     if (!fs.existsSync(RELEASE_DIR)) {
         fs.mkdirSync(RELEASE_DIR, { recursive: true });
     }
