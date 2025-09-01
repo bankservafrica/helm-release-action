@@ -95,10 +95,7 @@ async function main() {
     if (!fs.existsSync(RELEASE_DIR)) {
         fs.mkdirSync(RELEASE_DIR, { recursive: true });
     }
-
-    if (!fs.existsSync(RELEASE_DIR)) {
-        fs.mkdirSync(RELEASE_DIR, { recursive: true });
-    }
+    
     await installPlugins();
     await exec.exec(HELM, repo());
     await exec.exec(HELM, package());
