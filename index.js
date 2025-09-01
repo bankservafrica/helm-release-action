@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const path = require('path');
 const fs = require('fs');
-const yaml = require('js-yaml'); // <-- Ensure this is in your code and package.json
+const yaml = require('js-yaml');
 const { getLatestHelmS3Version } = require('./utils');
 
 const HELM = 'helm';
@@ -16,42 +16,42 @@ function repo() {
 }
 
 // Returns argument required to generate the chart package.
+// This function has been corrected to handle empty packageExtraArgs.
 function package() {
-
- 
   const args = [
     'package',
     core.getInput('chart'),
     '--dependency-update',
     '--destination',
     RELEASE_DIR,
-    ...core.getInput('packageExtraArgs').split(/\s+/),
   ];
+
+  // This is the definitive fix for the empty string argument
+  const extraArgs = core.getInput('packageExtraArgs');
+  if (extraArgs) {
+    args.push(...extraArgs.split(/\s+/));
+  }
+
   const version = core.getInput('version');
   if (version) {
     args.push('--version', version);
   }
-   console.log("ARGS------",args)
+
+  // Diagnostic line you added
+  console.log('ARGS------', args);
+
   return args;
 }
 
 // Returns argument required to push the chart release to S3 repository.
-// THIS IS THE DEFINITIVE FIX
 function push() {
-  console.log("******************INSIDE PUSH******")
   const chartPath = core.getInput('chart');
-
-  console.log("******************Chart PAth ",chartPath)
   const chartYaml = yaml.load(fs.readFileSync(path.join(chartPath, 'Chart.yaml'), 'utf8'));
 
-   console.log("******************Chart YML ",chartYaml)
-  // Get the chart name from Chart.yaml and the version from inputs
   const chartName = chartYaml.name;
   const version = core.getInput('version');
 
-  // Build the expected filename from the chart name and version
   const releaseFile = path.resolve(RELEASE_DIR, `${chartName}-${version}.tgz`);
-  console.log("realese-file---------", releaseFile)
 
   const args = ['s3', 'push', releaseFile, REPO_ALIAS];
 
@@ -63,7 +63,6 @@ function push() {
   }
 
   const relativeUrls = core.getInput('relativeUrls', { required: true }) === 'true';
-    console.log("relativeURLS---------", relativeUrls)
   if (relativeUrls) {
     args.push('--relative');
   }
@@ -86,20 +85,13 @@ async function installPlugins() {
 
 async function main() {
   try {
-    console.log('--- The updated script is running ---'); // Your verification message
+    console.log('--- The updated script is running ---');
     if (!fs.existsSync(RELEASE_DIR)) {
       fs.mkdirSync(RELEASE_DIR, { recursive: true });
     }
     await installPlugins();
     await exec.exec(HELM, repo());
     await exec.exec(HELM, package());
-    
-    // --- NEW DIAGNOSTIC STEP ---
-    console.log('--- Verifying the packaged file exists ---');
-    await exec.exec('ls', ['-al', RELEASE_DIR]);
-    // ----------------------------
-
-    
     await exec.exec(HELM, push());
   } catch (err) {
     core.error(err);
