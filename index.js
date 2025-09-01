@@ -17,6 +17,8 @@ function repo() {
 
 // Returns argument required to generate the chart package.
 function package() {
+
+ 
   const args = [
     'package',
     core.getInput('chart'),
@@ -29,6 +31,7 @@ function package() {
   if (version) {
     args.push('--version', version);
   }
+   console.log("ARGS------",args)
   return args;
 }
 
@@ -44,6 +47,7 @@ function push() {
 
   // Build the expected filename from the chart name and version
   const releaseFile = path.resolve(RELEASE_DIR, `${chartName}-${version}.tgz`);
+  console.log("realese-file---------", releaseFile)
 
   const args = ['s3', 'push', releaseFile, REPO_ALIAS];
 
@@ -55,6 +59,7 @@ function push() {
   }
 
   const relativeUrls = core.getInput('relativeUrls', { required: true }) === 'true';
+    console.log("relativeURLS---------", relativeUrls)
   if (relativeUrls) {
     args.push('--relative');
   }
