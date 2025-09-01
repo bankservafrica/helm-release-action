@@ -38,9 +38,13 @@ function package() {
 // Returns argument required to push the chart release to S3 repository.
 // THIS IS THE DEFINITIVE FIX
 function push() {
+  console.log("******************INSIDE PUSH******")
   const chartPath = core.getInput('chart');
+
+  console.log("******************Chart PAth ",chartPath)
   const chartYaml = yaml.load(fs.readFileSync(path.join(chartPath, 'Chart.yaml'), 'utf8'));
 
+   console.log("******************Chart YML ",chartYaml)
   // Get the chart name from Chart.yaml and the version from inputs
   const chartName = chartYaml.name;
   const version = core.getInput('version');
@@ -89,6 +93,13 @@ async function main() {
     await installPlugins();
     await exec.exec(HELM, repo());
     await exec.exec(HELM, package());
+    
+    // --- NEW DIAGNOSTIC STEP ---
+    console.log('--- Verifying the packaged file exists ---');
+    await exec.exec('ls', ['-al', RELEASE_DIR]);
+    // ----------------------------
+
+    
     await exec.exec(HELM, push());
   } catch (err) {
     core.error(err);
