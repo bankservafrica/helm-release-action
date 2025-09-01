@@ -28,13 +28,28 @@ inputs:
   helmS3Version:
     description: 'The version of the Helm S3 plugin to install. Defaults to the latest release from GitHub.'
     required: false
-runs:
+
+  runs:
   using: 'docker'
   image: 'Dockerfile'
+  env:
+    # Pass inputs as environment variables with the INPUT_ prefix
+    INPUT_VERSION: ${{ inputs.version }}
+    INPUT_CHART: ${{ inputs.chart }}
+    INPUT_REPO: ${{ inputs.repo }}
+    INPUT_FORCERELEASE: ${{ inputs.forceRelease }}
+    INPUT_PACKAGEEXTRAARGS: ${{ inputs.packageExtraArgs }}
+    INPUT_RELATIVEURLS: ${{ inputs.relativeUrls }}
+    INPUT_HELMS3VERSION: ${{ inputs.helmS3Version }}
   args:
-    - ${{ inputs.version }}
-    - ${{ inputs.chart }}
-    - ${{ inputs.repo }}
-    - ${{ inputs.forceRelease }}
-    - ${{ inputs.relativeUrls }}
-    - ${{ inputs.helmS3Version }}  # Ensure it's passed to the script
+  
+# runs:
+#   using: 'docker'
+#   image: 'Dockerfile'
+#   args:
+#     - ${{ inputs.version }}
+#     - ${{ inputs.chart }}
+#     - ${{ inputs.repo }}
+#     - ${{ inputs.forceRelease }}
+#     - ${{ inputs.relativeUrls }}
+#     - ${{ inputs.helmS3Version }}  # Ensure it's passed to the script
