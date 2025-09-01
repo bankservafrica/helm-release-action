@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const path = require('path');
 const fs = require('fs');
+const yaml = require('js-yaml'); // <-- NEW DEPENDENCY
 const { getLatestHelmS3Version } = require('./utils');
 
 const HELM = 'helm';
@@ -36,13 +37,17 @@ function package() {
 }
 
 // Returns argument required to push the chart release to S3 repository.
-// This function has been corrected to use an absolute file path.
+// This function has been corrected to use a reliable file path.
 function push() {
-  // Get the name of the packaged chart file
-  const chartFileName = fs.readdirSync(RELEASE_DIR)[0];
+  const chartPath = core.getInput('chart');
+  const chartYaml = yaml.load(fs.readFileSync(path.join(chartPath, 'Chart.yaml'), 'utf8'));
 
-  // Use path.resolve() to create a full, absolute path to the file
-  const releaseFile = path.resolve(RELEASE_DIR, chartFileName);
+  // Get the chart name from Chart.yaml and the version from inputs
+  const chartName = chartYaml.name;
+  const version = core.getInput('version');
+
+  // Build the expected filename from the chart name and version
+  const releaseFile = path.resolve(RELEASE_DIR, `${chartName}-${version}.tgz`);
 
   const args = ['s3', 'push', releaseFile, REPO_ALIAS];
 
@@ -83,6 +88,10 @@ async function installPlugins() {
 
 async function main() {
   try {
+    // Create the .release directory before packaging
+    if (!fs.existsSync(RELEASE_DIR)) {
+        fs.mkdirSync(RELEASE_DIR, { recursive: true });
+    }
     await installPlugins();
     await exec.exec(HELM, repo());
     await exec.exec(HELM, package());

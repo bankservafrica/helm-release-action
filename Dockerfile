@@ -8,4 +8,6 @@ RUN curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 |
 
 COPY . ./
 
+RUN npm install js-yaml
+
 ENTRYPOINT ["node", "/index.js"]
