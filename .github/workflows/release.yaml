@@ -3,7 +3,6 @@ on:
   workflow_dispatch:
 env:
   GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-  GOPRIVATE: "github.com/bankservafrica"
 
 jobs:
   release:
